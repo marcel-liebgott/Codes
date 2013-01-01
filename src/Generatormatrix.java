@@ -38,7 +38,7 @@ public class Generatormatrix{
      * @access	private
      * @var		int-array
      */
-    private List<int[]> _codewords = new ArrayList<>();
+    private List<int[]> _codewords;
 
     /**
      * Galois-Feld
@@ -54,64 +54,42 @@ public class Generatormatrix{
      * @access	public
      * @param	array Generatormatrix
      * @param	int array Standard 2 (GF(2))
+     * @throws  Exception
      */
-    public Generatormatrix(int[][] gmatrix, int galois){
-	if(galois == 0){
-		this._galois = 2;
-	}else{
-		this._galois = galois;
-	}
-
-        this._gmatrix = new int[2][4];
-        
-        this._gmatrix[0][0] = 1;
-        this._gmatrix[0][1] = 0;
-        this._gmatrix[0][2] = 1;
-        this._gmatrix[0][3] = 1;
-        
-        this._gmatrix[1][0] = 0;
-        this._gmatrix[1][1] = 1;
-        this._gmatrix[1][2] = 1;
-        this._gmatrix[1][3] = 2;
-        
-	setRowDimension();
-	setLineDimension();
-
-	int[] a = new int[4];
-	a[0] = 1;
-	a[1] = 0;
-	a[2] = 1;
-	a[3] = 1;
-
-	int[] b = new int[4];
-	b[0] = 0;
-	b[1] = 1;
-	b[2] = 1;
-	b[3] = 2;
-
-	// Werte aus Generatormatrix in Codewords uebernehmen 
-        /*for(int i = 0; i < this._countLine; i++){
-            int tmp[] = new int[this._gmatrix[i].length];
-            for(int j = 0; j < this._countRows; j++){
-                tmp[i] = this._gmatrix[i][j];
-                this._codewords.add(tmp);
+    public Generatormatrix(ArrayList<int[]> gmatrix, int galois) throws Exception{
+        try {
+            if(!(gmatrix instanceof ArrayList)){
+                throw new IllegalArgumentException("generatormatrix must be a instance of ArrayList");
             }
-        }*/
-
-	this._codewords.add(a);
-	this._codewords.add(b);
-
-	generateCodewordMatrix();
-
-	System.out.println(this._codewords.size());
-
-	for(int i = 0; i < this._codewords.size(); i++){
-            int[] k = this._codewords.get(i);
-            for(int j = 0; j < k.length; j++){
-                System.out.print(k[j]);
+            
+            if(galois == 0){
+                    this._galois = 2;
+            }else{
+                    this._galois = galois;
             }
-            System.out.print("\n");
-	}
+            
+            if(checkGeneratorMatrix() == true){
+                this._codewords = new ArrayList<int[]>(gmatrix);
+
+                generateCodewordMatrix();
+
+                setStatistics();
+            }
+        }catch(IllegalArgumentException | IndexOutOfBoundsException ee){
+            System.out.println("exception caught: " + ee.getMessage());
+        }catch(Exception ex){
+            System.out.println("exception caught: " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * get all statistics
+     * 
+     * @access  private
+     */
+    private void setStatistics(){
+        setLineDimension();
+        setRowDimension();
     }
     
     /**
@@ -120,8 +98,8 @@ public class Generatormatrix{
      * @access  private
      */
     private void setLineDimension(){
-        if(_gmatrix.length > 0){
-            this._countLine = this._gmatrix.length;
+        if(this._codewords.size() > 0){
+            this._countLine = this._codewords.size();
         }
     }
     
@@ -131,24 +109,33 @@ public class Generatormatrix{
      * @access  private
      */
     private void setRowDimension(){
-        if(_gmatrix[0].length > 0){
-            this._countRows = this._gmatrix[0].length;
+        if(this._codewords.size() > 0){
+            // get the first element
+            int[] tmp = this._codewords.get(0);
+
+            this._countRows = tmp.length;
         }
     }
 
     /**
      * ueberpruefe, ob Generatormatrix eine Einheitsmatrix enthaelt
+     * sowie ob die Bits max in der Galois-Menge liegt
      *
      * @return	boolean
+     * @throws  Exception
      */
-    private boolean checkGeneratorMatrix(){
+    private boolean checkGeneratorMatrix() throws Exception{
         int dim = this._countLine;
         for(int i = 0; i < dim; i++){
             for(int j = 0; j < dim; j++){
-                if(i == j && this._gmatrix[i][j] != 1){
-                    return false;
-                }else if(i != j && this._gmatrix[i][j] != 0){
-                    return false;
+                if(this._gmatrix[i][j] < this._galois){
+                    if(i == j && this._gmatrix[i][j] != 1){
+                        return false;
+                    }else if(i != j && this._gmatrix[i][j] != 0){
+                        return false;
+                    }
+                }else{
+                    throw new Exception("generator matrix have a wrong element");
                 }
             }
         }
@@ -160,6 +147,7 @@ public class Generatormatrix{
      *
      * @param	int[] code
      * @param	int[] code
+     * @throws  Exception
      */
     private void generateCode(int[] code_one, int[] code_two){
         if(code_one.length > 0 && code_two.length > 0 && code_one.length == code_two.length){
@@ -170,7 +158,6 @@ public class Generatormatrix{
 
             if(searchValue(code) == false){
                 this._codewords.add(code);
-                this._countLine++;
             }
         }else{
             throw new IllegalArgumentException("parameter is wrong");
@@ -181,32 +168,32 @@ public class Generatormatrix{
      * generiert die Matrix mit allen Codewoertern
      *
      * @access	private
+     * @throws  Exception
      */
     private void generateCodewordMatrix(){
-        System.out.println("generateCodewordMatrix()");
-        System.out.println(this._codewords.size());
         try{
             boolean completed = false;
             int current = 0;
 
-            while(completed == false){
-                System.out.println("Groesse: " + this._codewords.size());
+            while(completed == false || current < this._codewords.size()){
                 int k = this._codewords.size();
                 for(int i = 0; i < k; i++){
-                    System.out.println("groesse: " + this._codewords.size() + " curr: " + current + " i: " + i);
                     if(i == current){
                         continue;
                     }
 
-                    generateCode(this._codewords.get(i), this._codewords.get(current));
-                    
                     if(current == this._codewords.size()){
                         completed = true;
+                        break;
                     }
+                    
+                    generateCode(this._codewords.get(i), this._codewords.get(current));
                 }
 
                 current++;
             }
+        }catch(IndexOutOfBoundsException ee){
+            System.out.println("exception caught: " + ee.getMessage());
         }catch(Exception e){
             System.out.println("exception caught: " + e.getMessage());
         }
@@ -228,11 +215,82 @@ public class Generatormatrix{
     }
     
     /**
+     * get all enabled codewords
+     * 
+     * @access  public
+     * @return  List<int[]>
+     * @throws  Exception
+     */
+    public final List<int[]> getEnableCodewords() throws Exception{
+        if(!(this._codewords instanceof ArrayList)){
+            throw new Exception("codewords has a wrong type");
+        }
+        
+        return this._codewords;
+    }
+    
+    /**
+     * show all statistics
+     * 
+     * @access  public
+     */
+    public final void showStatistics(){
+        System.out.println("dimension: " + this._countRows + "x" + this._countLine);
+        System.out.println("size: " + this._codewords.size());
+        System.out.println("galois: " + this._galois);
+    }
+    
+    /**
+     * show all enable Codewords
+     * 
+     * @access  public
+     * @throws  Exception 
+     */
+    public void showAllEnableCodes() throws Exception{
+        if(this._codewords.size() > 0){
+            for(int i = 0; i < this._codewords.size(); i++){
+                int[] j = this._codewords.get(i);                
+                
+                if(j.length == this._countRows){
+                    System.out.print((i + 1) + ": ");
+                    for(int k = 0; k < this._countRows; k++){
+                        System.out.print(j[k]);
+                    }
+                    System.out.print("\n");
+                }else{
+                    throw new Exception("somethink wrong by calculation of enable codewords");
+                }
+            }
+        }
+    }
+    
+    /**
      * @param args the command line arguments
      */
     public static void main(String[] args){
-            int[][] code = new int[1][1];
-            code[0][0] = 1;
+        try{
+            ArrayList<int[]> code = new ArrayList<>();
+            int[] l1 = new int[4];
+            l1[0] = 1;
+            l1[1] = 0;
+            l1[2] = 1;
+            l1[3] = 1;
+            int[] l2 = new int[4];
+            l2[0] = 0;
+            l2[1] = 1;
+            l2[2] = 1;
+            l2[3] = 2;
+            
+            code.add(l1);
+            code.add(l2);
+            
             Generatormatrix gmatrix = new Generatormatrix(code, 3);
+            
+            gmatrix.showStatistics();
+            
+            gmatrix.showAllEnableCodes();
+        }catch(Exception e){
+            System.out.println("exception caught: " + e.getMessage());
+        }
     }
 }
