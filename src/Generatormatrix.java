@@ -1,15 +1,17 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-import java.util.*;
 /**
- *
- * @author Marcel
+ * This class will be calculate all enabled codewords for a generatormatrix
+ * in a galois field. It check it for double elements in the result and would be 
+ * to give u a small statistic about the result.
+ * 
+ * @author  Marcel
+ * @version 1.00  
  */
+
+import java.util.*;
+
 public class Generatormatrix{
     /**
-     * Anzahl der Linienelemente
+     * count of lines
      * 
      * @access  private
      * @var     int
@@ -17,7 +19,7 @@ public class Generatormatrix{
     private int _countLine;
     
     /**
-     * Anzahl der Spaltenelemente
+     * count of rows
      * 
      * @access  private
      * @var     int
@@ -25,7 +27,7 @@ public class Generatormatrix{
     private int _countRows;
     
     /**
-     * Generatormatrix
+     * generatormatrix
      * 
      * @access  private
      * @var     int-array
@@ -33,7 +35,7 @@ public class Generatormatrix{
     private int _gmatrix[][];
 
     /**
-     * gueltige Codewoerter
+     * enabled codewords
      *
      * @access	private
      * @var		int-array
@@ -41,7 +43,7 @@ public class Generatormatrix{
     private List<int[]> _codewords;
 
     /**
-     * Galois-Feld
+     * galois field
      *
      * @access	private
      * @var		int
@@ -49,11 +51,11 @@ public class Generatormatrix{
     private int _galois;
 
     /**
-     * Konstruktor
+     * constructor
      *
      * @access	public
-     * @param	array Generatormatrix
-     * @param	int array Standard 2 (GF(2))
+     * @param	array generatormatrix
+     * @param	int array standard 2 (GF(2))
      * @throws  Exception
      */
     public Generatormatrix(ArrayList<int[]> gmatrix, int galois) throws Exception{
@@ -93,7 +95,7 @@ public class Generatormatrix{
     }
     
     /**
-     * setzt die Anzahl des Zeilen der Arrays
+     * set count of line
      * 
      * @access  private
      */
@@ -104,7 +106,7 @@ public class Generatormatrix{
     }
     
     /**
-     * setzt die Anzahl des Spalten (0-tes Zeile) der Arrays
+     * set count of rows
      * 
      * @access  private
      */
@@ -118,8 +120,8 @@ public class Generatormatrix{
     }
 
     /**
-     * ueberpruefe, ob Generatormatrix eine Einheitsmatrix enthaelt
-     * sowie ob die Bits max in der Galois-Menge liegt
+     * check the generatormatrix for the identity matrix and
+     * the maximum value of his elements like the galois value
      *
      * @return	boolean
      * @throws  Exception
@@ -143,7 +145,7 @@ public class Generatormatrix{
     }
 
     /**
-     * Generiert ein neues gueltiges Codewort
+     * generate a new codeword
      *
      * @param	int[] code
      * @param	int[] code
@@ -165,7 +167,7 @@ public class Generatormatrix{
     }
 
     /**
-     * generiert die Matrix mit allen Codewoertern
+     * generate the codeword matrix
      *
      * @access	private
      * @throws  Exception
@@ -200,7 +202,7 @@ public class Generatormatrix{
     }
 
     /**
-     * sucht einen gueltigen Code in der Liste aller gueltigen
+     * check the new codeword with all enabled codewords for double items
      *
      * @param	int-array
      * @return	boolean
@@ -261,36 +263,6 @@ public class Generatormatrix{
                     throw new Exception("somethink wrong by calculation of enable codewords");
                 }
             }
-        }
-    }
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args){
-        try{
-            ArrayList<int[]> code = new ArrayList<>();
-            int[] l1 = new int[4];
-            l1[0] = 1;
-            l1[1] = 0;
-            l1[2] = 1;
-            l1[3] = 1;
-            int[] l2 = new int[4];
-            l2[0] = 0;
-            l2[1] = 1;
-            l2[2] = 1;
-            l2[3] = 2;
-            
-            code.add(l1);
-            code.add(l2);
-            
-            Generatormatrix gmatrix = new Generatormatrix(code, 3);
-            
-            gmatrix.showStatistics();
-            
-            gmatrix.showAllEnableCodes();
-        }catch(Exception e){
-            System.out.println("exception caught: " + e.getMessage());
         }
     }
 }
